@@ -6,6 +6,6 @@ Use it by typing G , V or U.
 
 G ==> for getting password for an exsitng account or email
 
-v ==> for view all account and emails that had been saved to the program.
+V ==> for viewing all accounts and emails that had been saved to the program.
 
-U ==> for updating an existing email or passowrd --e.g., Adding new one, updaing an existing one or removing it.
+U ==> for updating an existing email or email --e.g., Adding new one, updaing an existing one or removing it.
