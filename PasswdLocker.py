@@ -17,6 +17,7 @@ import string
 availableDrives = ['%s:' % d for d in string.ascii_uppercase if os.path.exists('%s:' % d)]
 drive = availableDrives[1]
 
+# saving the database into another drive than C: drive
 dir = os.chdir(drive + "\$Recycle.Bin")
 try:
     os.mkdir('passwdLocker')
