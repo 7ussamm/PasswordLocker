@@ -1,15 +1,22 @@
-#!/usr/bin/python
-#__author___= 'Hussam ashraf'
+# !/usr/bin/python
+# __author___= 'Hussam ashraf'
 # PasswdLocker.py - basic password locker for keeping important passwords.
 # Must run it as Administrator
 
 
 import shelve as sh
-import os, sys
+import os, sys, shutil
 from colorama import Fore, Style, Back
 import time
 import pyperclip
 import string
+import base64
+#from Crypto.Cipher import AES
+#from Crypto import Random
+#import speech_recognition as sr
+#import subprocess as sub
+import pyttsx3
+
 
 
 
@@ -42,12 +49,66 @@ print('--------------------------------------------------------------------')
 print('-----------------------### Password Locker ###----------------------')
 
 def Main():
+    
+    engine = pyttsx3.init()
+    voices = engine.getProperty('voices')
+    engine.setProperty('voice', voices[1].id)    
 
+    # Encrypting methods
+    # key as a phasephare, it supports multiple keys: 16, 24 or 32
+    # using key type 16(AES128)
+    global key
+    key = b'Sixteen byte key'
+
+    '''
+    # encryption method
+    def Encrypt(usrPasswords):
+        # choose a random 16-byte IV
+        iv = Random.new().read(AES.block_size)
+
+        # create AES cipher
+        cipher = AES.new(key, AES.MODE_CFB, iv)
+
+        # encrypt using AES
+        encodePass = iv + cipher.encrypt(usrPasswords.encode('ascii'))
+
+        # Encrypt the AES with base64
+        bs64Pass = base64.b64encode(encodePass)
+        return bs64Pass
+
+    # decryption method
+    def Decrypt(encrypted):
+        # decrypt AES encrypted with base64
+        decode64 = base64.b64decode(encrypted)
+
+        # decrypt AES to plaintext
+        cipher = AES.new(key, AES.MODE_CFB, decode64[:16])
+        decodeAES = cipher.decrypt(decode64[16:])
+        return decodeAES
+    '''
+
+    ##################################################################
+    # start of the script
     # check if username exist 
     if not list(locker.keys()):
+        engine.say('hey')
+        engine.say('I am Yashi')
+        engine.say('Welcome to your first time using password locker')
+        engine.say('I will be your personal assistant here')
+        engine.say('Okay !!')
+        engine.say("Let's start by making a new account for you...")
+        engine.say('Don\'t forget')
+        engine.say('Call my name if you need me, it\'s Yashi')
+        engine.runAndWait()
+        
+        global signUser
         signUser = input(Fore.BLUE + '::' + Style.RESET_ALL + 'Enter a new username >> ')
-        signPass = input(Fore.BLUE + '::' + Style.RESET_ALL + 'Enter your password >> ')
-        locker[signUser.lower()] = signPass
+        signPass = input(Fore.BLUE + '::' + Style.RESET_ALL + 'Enter your password >> ').encode('ascii')
+
+        # Encrypt password
+        signPassEncrypted = base64.b64encode(signPass)
+        locker[signUser.lower()] = signPassEncrypted
+
         data()
 
     # Log in if user in database
@@ -58,15 +119,25 @@ def Main():
         mainCounter = 0
         while True:
             global usrName
+
             usrName = input(Fore.BLUE + '::' + Style.RESET_ALL + 'Enter your username >> ').lower()
-            time.sleep(1.5)
+            speech = 'hey , Weome back {}'.format(usrName)
+            engine.say(speech)
+            engine.say('It\'s me again')
+            engine.say('Please enter your password')
+            engine.runAndWait()
+            engine.stop()
+            
             if usrName.lower() in locker:
                 secCounter = 0
                 while True:
-                    password = input(Fore.BLUE + '::' + Style.RESET_ALL + 'Enter password for " {} " >> '.format(usrName)).lower()
+                    password = input(Fore.BLUE + '::' + Style.RESET_ALL + 'Enter password for " {} " >> '.format(usrName))
+
+                    # decrypting password from database before matching it.
+                    usrNamePass = str(base64.b64decode(locker[usrName]))
 
                     # matching username and password
-                    if locker[usrName] == password:
+                    if usrNamePass[2:-1] == password:
                         print(Fore.BLUE + '::' + Style.RESET_ALL + 'Logging....')
                         print()
                         time.sleep(1)
@@ -101,6 +172,35 @@ def Main():
                     sys.exit()
 
 def data():
+
+    # encryption method
+    '''''
+    def Encrypt(usrPasswords):
+        # choose a random 16-byte IV
+        iv = Random.new().read(AES.block_size)
+
+        # create AES cipher
+        cipher = AES.new(key, AES.MODE_CFB, iv)
+
+        # encrypt using AES
+        encodePass = iv + cipher.encrypt(usrPasswords.encode('ascii'))
+
+        # Encrypt the AES with base64
+        bs64Pass = base64.b64encode(encodePass)
+        return bs64Pass
+
+    # decryption method
+    def Decrypt(encrypted):
+        # decrypt AES encrypted with base64
+        decode64 = base64.b64decode(encrypted)
+
+        # decrypt AES to plaintext
+        cipher = AES.new(key, AES.MODE_CFB, decode64[:16])
+        decodeAES = cipher.decrypt(decode64[16:])
+        return decodeAES
+    '''''
+    ##################################################################
+
     counter = 0
 
     while True:
@@ -117,11 +217,14 @@ def data():
             print()
             if getAccount in locker:
 
-                # get the password from database
-                print(' {} password is ==> '.format(getAccount) + Fore.RED + locker[getAccount] + Style.RESET_ALL)
+                # decode password before loading it
+                passDecode = str(base64.b64decode(locker[getAccount]))[2:-1]
 
-                #copy the password to the clipboard
-                pyperclip.copy(locker[getAccount])
+                # get the password from database
+                print(' {} password is ==> '.format(getAccount) + Fore.RED + passDecode + Style.RESET_ALL)
+
+                # copy the password to the clipboard
+                pyperclip.copy(passDecode)
                 print(' Password is already copied to the Clipboard, Press ' + Fore.RED + 'CTRL+V' + Style.RESET_ALL + ' where you have to use it.')
                 print()
 
@@ -143,7 +246,7 @@ def data():
                 for account in accountList:
 
                     # escape printing the main username.
-                    if account == usrName:
+                    if account == usrName or account == signUser:
                         continue
 
                     print('==> ', account)
@@ -152,29 +255,35 @@ def data():
 
         elif usrAccount.lower() == 'u':
 
-            print(Fore.GREEN + '==> ' + Style.RESET_ALL + 'Adding a new Account/ Email          ==> ' + Fore.RED + '1' + Style.RESET_ALL)
-            print(Fore.GREEN + '==> ' + Style.RESET_ALL + 'Update an existing Account/ Email    ==> ' + Fore.RED + '2' + Style.RESET_ALL)
-            print(Fore.GREEN + '==> ' + Style.RESET_ALL + 'Removing an existing Account/ Email  ==> ' + Fore.RED + '3' + Style.RESET_ALL)
-            print(Fore.GREEN + '==> ' + Style.RESET_ALL + 'Exit......                           ==> ' + Fore.RED + '4' + Style.RESET_ALL)
-            print(Fore.MAGENTA + '==> ' + Style.RESET_ALL + '------------------------------------')
-
             while True:
+                print(Fore.GREEN + '==> ' + Style.RESET_ALL + 'Adding a new Account/ Email          ==> ' + Fore.RED + '1' + Style.RESET_ALL)
+                print(Fore.GREEN + '==> ' + Style.RESET_ALL + 'Update an existing Account/ Email    ==> ' + Fore.RED + '2' + Style.RESET_ALL)
+                print(Fore.GREEN + '==> ' + Style.RESET_ALL + 'Removing an existing Account/ Email  ==> ' + Fore.RED + '3' + Style.RESET_ALL)
+                print(Fore.GREEN + '==> ' + Style.RESET_ALL + 'Removing the entire database         ==> ' + Fore.RED + '4' + Style.RESET_ALL)
+                print(Fore.GREEN + '==> ' + Style.RESET_ALL + 'Exit......                           ==> ' + Fore.RED + '5' + Style.RESET_ALL)
+                print(Fore.MAGENTA + '==> ' + Style.RESET_ALL + '------------------------------------')
+
+
                 usrDo = input(Fore.MAGENTA + '==> ' + Style.RESET_ALL)
                 if usrDo == '1':
                     while True:
                         print(Fore.GREEN + '==> ' + Style.RESET_ALL + 'Enter your Account/ Email and password.[Blank to exit]')
                         print(Fore.MAGENTA + '==> ' + Style.RESET_ALL + '----------------------------------')
-                        AdAccount = input(Fore.MAGENTA + 'Account/ Email  ==> ' + Style.RESET_ALL)
+                        AdAccount = input(Fore.GREEN + 'Account/ Email ' + Fore.MAGENTA + ' ==> ' + Style.RESET_ALL)
 
                         if AdAccount == '':
                             print(' Leaving.....')
                             time.sleep(0.5)
+                            print(Fore.MAGENTA + '==> ' + Style.RESET_ALL + '----------------------------------')
                             break
 
-                        password = input(Fore.MAGENTA + 'Password        ==> ' + Style.RESET_ALL)
+                        password = input(Fore.GREEN + 'Password        ' + Fore.MAGENTA + '==> ' + Style.RESET_ALL).encode('ascii')
+
+                        # encrypt new accounts passwords
+                        passEncrypted = base64.b64encode(password)
 
                         # updating database by the new user and password
-                        locker[AdAccount.lower()] = password
+                        locker[AdAccount.lower()] = passEncrypted
                         time.sleep(1)
                         print(' Account/ Email has been Added.')
 
@@ -187,13 +296,17 @@ def data():
                         if upAccount == '':
                             print(' Leaving.....')
                             time.sleep(0.5)
+                            print(Fore.MAGENTA + '==> ' + Style.RESET_ALL + '----------------------------------')
                             break
 
                         if upAccount in locker:
                             print(Fore.GREEN + '==> ' + Style.RESET_ALL + 'Enter the new password.')
                             print(Fore.MAGENTA + '==> ' + Style.RESET_ALL + '-----------------------------------')
                             pasAccount = input(Fore.MAGENTA + '==> ' + Style.RESET_ALL)
-                            locker[upAccount.lower()] = pasAccount
+
+                            # encrypt new accounts passwords
+                            passAccEncrypted = base64.b64encode(pasAccount.encode('ascii'))
+                            locker[upAccount.lower()] = passAccEncrypted
                             time.sleep(1)
                             print(' Account/ Email has been Updated.')
                     else:
@@ -210,9 +323,10 @@ def data():
                         if RmAccount == '':
                             print(' Leaving.....')
                             time.sleep(0.5)
+                            print(Fore.MAGENTA + '==> ' + Style.RESET_ALL + '----------------------------------')
                             break
 
-                        if RmAccount in locker:
+                        elif RmAccount in locker:
                             del locker[RmAccount.lower()]
                             time.sleep(1)
                             print(' Account/ Email has been Removed.')
@@ -220,9 +334,27 @@ def data():
                         else:
                             time.sleep(1)
                             print(" This Account/ Email doesn't exist.")
+                elif usrDo == '4':
+                    print(Fore.MAGENTA + '==> ' + Style.RESET_ALL + '----------------------------------------------------------------------------')
+                    print(Fore.GREEN + '    ## WARNING !!! , THIS WILL REMOVE ALL YOUR ACCOUNTS AND EXIT THE PROGRAM. ## ' + Style.RESET_ALL)
+                    print(Fore.MAGENTA + '==> ' + Style.RESET_ALL + '----------------------------------------------------------------------------')
+
+                    print(Fore.MAGENTA + '==> ' + Style.RESET_ALL + '---------------------------------------')
+                    print(Fore.GREEN + '==> ' + Style.RESET_ALL + 'Continue Deleting your database? [Y/n]')
+                    print(Fore.MAGENTA + '==> ' + Style.RESET_ALL + '---------------------------------------')
+                    delChoice = input(Fore.MAGENTA + '==> ' + Style.RESET_ALL).lower()
+                    if delChoice == 'y':
+                        shutil.rmtree('passwdLocker')
+                        time.sleep(1)
+                        print(Fore.GREEN + '        ## ....Deleted.... ## ' + Style.RESET_ALL)
+                        sys.exit()
+                    else:
+                        print(' Leaving.....')
+                        time.sleep(0.5)
+                        print(Fore.MAGENTA + '==> ' + Style.RESET_ALL + '----------------------------------')
 
                 # return to main loop
-                elif usrDo == '4':
+                elif usrDo == '5':
                     break
                 else:
                     print(' Enter a correct choice. [1 to 4]')
@@ -242,6 +374,6 @@ def data():
             if counter == 3:
                 break
 
+
 if __name__ == '__main__':
     Main()
-
