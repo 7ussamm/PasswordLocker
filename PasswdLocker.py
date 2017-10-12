@@ -91,14 +91,13 @@ def Main():
     # start of the script
     # check if username exist 
     if not list(locker.keys()):
-        engine.say('hey')
-        engine.say('I am Yashi')
+        engine.say('Hello')
+        engine.say('I am Scarlett')
         engine.say('Welcome to your first time using password locker')
         engine.say('I will be your personal assistant here')
-        engine.say('Okay !!')
+
         engine.say("Let's start by making a new account for you...")
-        engine.say('Don\'t forget')
-        engine.say('Call my name if you need me, it\'s Yashi')
+
         engine.runAndWait()
         
         global signUser
@@ -121,9 +120,9 @@ def Main():
             global usrName
 
             usrName = input(Fore.BLUE + '::' + Style.RESET_ALL + 'Enter your username >> ').lower()
-            speech = 'hey , Weome back {}'.format(usrName)
+            speech = 'hey , Welcome back Huss'
             engine.say(speech)
-            engine.say('It\'s me again')
+            engine.say('It\'s me again, Scarlett')
             engine.say('Please enter your password')
             engine.runAndWait()
             engine.stop()
@@ -221,7 +220,8 @@ def data():
                 passDecode = str(base64.b64decode(locker[getAccount]))[2:-1]
 
                 # get the password from database
-                print(' {} password is ==> '.format(getAccount) + Fore.RED + passDecode + Style.RESET_ALL)
+                print(' #  {}  # Password is ==> '.format(getAccount) + Fore.GREEN + passDecode + Style.RESET_ALL)
+                print(Fore.MAGENTA + '==> ' + Style.RESET_ALL + '---------------------------------------------------------------------')
 
                 # copy the password to the clipboard
                 pyperclip.copy(passDecode)
@@ -246,8 +246,15 @@ def data():
                 for account in accountList:
 
                     # escape printing the main username.
-                    if account == usrName or account == signUser:
-                        continue
+                    try :
+
+                        if account == usrName :
+                            continue
+
+                        elif account == signUser:
+                            continue
+                    except:
+                        pass
 
                     print('==> ', account)
                     time.sleep(0.5)
