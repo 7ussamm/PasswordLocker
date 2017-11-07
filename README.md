@@ -10,10 +10,10 @@ V ==> for viewing all accounts and emails that had been saved to the program.
 
 U ==> for updating an existing email or email --e.g., Adding new one, updaing an existing one or removing it.
 
-## added some new features to it.
+## Added some new features to it.
 
   Encoding and decoding passwords in database using base64
 
-  Also the ability to use also AES encryption, functions still exist , check the code.
+  Also the ability to use AES encryption, functions still exist , check the code.
   
   In addition to some text to speech.
